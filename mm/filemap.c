@@ -42,6 +42,7 @@
 #include <linux/psi.h>
 #include <linux/ramfs.h>
 #include "internal.h"
+#include <linux/printk.h>
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/filemap.h>
@@ -52,6 +53,10 @@
 #include <linux/buffer_head.h> /* for try_to_free_buffers */
 
 #include <asm/mman.h>
+
+#ifdef PMEM_DBG
+int pmem_dev = 0;
+#endif
 
 /*
  * Shared mappings implemented 30.11.1994. It's not fully working yet,
@@ -997,6 +1002,13 @@ struct page *__page_cache_alloc(gfp_t gfp)
 
 		return page;
 	}
+
+#ifdef PMEM_DBG
+	if (pmem_dev) {
+		return alloc_pages_node(2, gfp, 0);
+	}
+#endif
+
 	return alloc_pages(gfp, 0);
 }
 EXPORT_SYMBOL(__page_cache_alloc);

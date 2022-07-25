@@ -50,6 +50,11 @@
 
 #define MPAGE_DA_EXTENT_TAIL 0x01
 
+#ifdef PMEM_DBG
+/* used for dynamically enable debug info. */
+int pmem_dbg_on = 0;
+#endif
+
 static __u32 ext4_inode_csum(struct inode *inode, struct ext4_inode *raw,
 			      struct ext4_inode_info *ei)
 {
@@ -6400,6 +6405,16 @@ vm_fault_t ext4_filemap_fault(struct vm_fault *vmf)
 {
 	struct inode *inode = file_inode(vmf->vma->vm_file);
 	vm_fault_t ret;
+
+#ifdef PMEM_DBG
+	if (pmem_dbg_on)
+	{
+		char *name = __getname();
+		char *path = dentry_path_raw(vmf->vma->vm_file->f_path.dentry, name, PATH_MAX);
+		PDBG("ext4 file: %s\n", path);
+		__putname(name);
+	}
+#endif
 
 	down_read(&EXT4_I(inode)->i_mmap_sem);
 	ret = filemap_fault(vmf);

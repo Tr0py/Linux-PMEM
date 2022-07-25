@@ -1780,7 +1780,7 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 		{
 			char *name = __getname();
 			char *path = dentry_path_raw(file->f_path.dentry, name, PATH_MAX);
-			PDBG("mmaped file: %s, vma: %px - %px\n", path, vma->vm_start, vma->vm_end);
+			//PDBG("mmaped file: %s, vma: %px - %px\n", path, vma->vm_start, vma->vm_end);
 			__putname(name);
 		}
 #endif
