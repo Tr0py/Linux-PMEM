@@ -64,7 +64,7 @@
 /*
  * Define EXT4FS_DEBUG to produce debug messages
  */
-#undef EXT4FS_DEBUG
+#define EXT4FS_DEBUG
 
 /*
  * Debug code
