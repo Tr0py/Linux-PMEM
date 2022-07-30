@@ -44,6 +44,8 @@
 #include <asm/byteorder.h>
 #include <uapi/linux/fs.h>
 
+#define PMEM_DEV
+
 struct backing_dev_info;
 struct bdi_writeback;
 struct bio;
@@ -2000,6 +2002,10 @@ struct super_operations {
 #define S_CASEFOLD	32768	/* Casefolded file */
 #define S_VERITY	65536	/* Verity file (using fs/verity/) */
 
+#ifdef PMEM_DEV
+#define S_VDAX		131072	/* file that needs persistent page cache */
+#endif
+
 /*
  * Note that nosuid etc flags are inode-specific: setting some file-system
  * flags just means all the inodes inherit those flags by default. It might be
@@ -2044,6 +2050,10 @@ static inline bool sb_rdonly(const struct super_block *sb) { return sb->s_flags 
 
 #define IS_WHITEOUT(inode)	(S_ISCHR(inode->i_mode) && \
 				 (inode)->i_rdev == WHITEOUT_DEV)
+
+#ifdef PMEM_DEV
+#define IS_VDAX(inode)		((inode)->i_flags & S_VDAX)
+#endif
 
 static inline bool HAS_UNMAPPED_ID(struct inode *inode)
 {
