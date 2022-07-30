@@ -8,6 +8,8 @@
 #include <linux/linkage.h>
 #include <linux/topology.h>
 
+#define PMEM_DEV
+
 struct vm_area_struct;
 
 /*
@@ -43,6 +45,9 @@ struct vm_area_struct;
 #define ___GFP_NOLOCKDEP	0x800000u
 #else
 #define ___GFP_NOLOCKDEP	0
+#endif
+#ifdef PMEM_DEV
+#define ___GFP_PMEM		0x1000000u
 #endif
 /* If the above are modified, __GFP_BITS_SHIFT may need updating */
 
