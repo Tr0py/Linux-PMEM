@@ -1591,6 +1591,12 @@ unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 		retval = -EINVAL;
 		if (unlikely(flags & MAP_HUGETLB && !is_file_hugepages(file)))
 			goto out_fput;
+#ifdef PMEM_DEV
+		if (flags & MAP_VDAX) {
+			struct inode *inode = file->f_inode;
+			inode->i_flags |= S_VDAX;
+		}
+#endif
 	} else if (flags & MAP_HUGETLB) {
 		struct user_struct *user = NULL;
 		struct hstate *hs;

@@ -992,6 +992,16 @@ struct page *__page_cache_alloc(gfp_t gfp)
 	int n;
 	struct page *page;
 
+#ifdef PMEM_DEV
+#define PMEM_NODE 2
+	if (gfp & ___GFP_PMEM) {
+		gfp &= ~___GFP_PMEM;
+		if (pmem_dev)
+			PMEM_DBG("gfp: %x\n", gfp);
+		return alloc_pages_node(PMEM_NODE, gfp, 0);
+	}
+#endif
+
 	if (cpuset_do_page_mem_spread()) {
 		unsigned int cpuset_mems_cookie;
 		do {
@@ -1002,12 +1012,6 @@ struct page *__page_cache_alloc(gfp_t gfp)
 
 		return page;
 	}
-
-#ifdef PMEM_DBG
-	if (pmem_dev) {
-		return alloc_pages_node(2, gfp, 0);
-	}
-#endif
 
 	return alloc_pages(gfp, 0);
 }
@@ -1698,6 +1702,10 @@ no_page:
 			gfp_mask |= __GFP_WRITE;
 		if (fgp_flags & FGP_NOFS)
 			gfp_mask &= ~__GFP_FS;
+
+#ifdef PMEM_DEV
+		update_gfp_vdax(mapping, &gfp_mask);
+#endif
 
 		page = __page_cache_alloc(gfp_mask);
 		if (!page)
@@ -2795,6 +2803,9 @@ static struct page *do_read_cache_page(struct address_space *mapping,
 repeat:
 	page = find_get_page(mapping, index);
 	if (!page) {
+#ifdef PMEM_DEV
+		update_gfp_vdax(mapping, &gfp);
+#endif
 		page = __page_cache_alloc(gfp);
 		if (!page)
 			return ERR_PTR(-ENOMEM);

@@ -6,6 +6,8 @@
 
 #ifdef __KERNEL__
 
+#define PMEM_DEV
+
 #include <linux/mmdebug.h>
 #include <linux/gfp.h>
 #include <linux/bug.h>
@@ -2960,6 +2962,19 @@ static inline int seal_check_future_write(int seals, struct vm_area_struct *vma)
 
 	return 0;
 }
+
+#ifdef PMEM_DEV
+static inline int update_gfp_vdax(struct address_space *mapping, gfp_t *gfp)
+{
+	struct inode *inode = mapping->host;
+
+	BUG_ON(!inode);
+	if (IS_VDAX(inode))
+		*gfp |= ___GFP_PMEM;
+
+	return 0;
+}
+#endif
 
 #endif /* __KERNEL__ */
 #endif /* _LINUX_MM_H */
