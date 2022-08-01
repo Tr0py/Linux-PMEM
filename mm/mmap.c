@@ -1782,15 +1782,6 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 	vma->vm_pgoff = pgoff;
 
 	if (file) {
-#ifdef PMEM_DBG
-		{
-			char *name = __getname();
-			char *path = dentry_path_raw(file->f_path.dentry, name, PATH_MAX);
-			//PDBG("mmaped file: %s, vma: %px - %px\n", path, vma->vm_start, vma->vm_end);
-			__putname(name);
-		}
-#endif
-
 		if (vm_flags & VM_DENYWRITE) {
 			error = deny_write_access(file);
 			if (error)

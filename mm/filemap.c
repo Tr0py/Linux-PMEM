@@ -54,10 +54,6 @@
 
 #include <asm/mman.h>
 
-#ifdef PMEM_DBG
-int pmem_dev = 0;
-#endif
-
 /*
  * Shared mappings implemented 30.11.1994. It's not fully working yet,
  * though.
@@ -996,8 +992,6 @@ struct page *__page_cache_alloc(gfp_t gfp)
 #define PMEM_NODE 2
 	if (gfp & ___GFP_PMEM) {
 		gfp &= ~___GFP_PMEM;
-		if (pmem_dev)
-			PMEM_DBG("gfp: %x\n", gfp);
 		return alloc_pages_node(PMEM_NODE, gfp, 0);
 	}
 #endif
