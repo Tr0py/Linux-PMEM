@@ -62,6 +62,9 @@ struct vm_area_struct;
 #define __GFP_HIGHMEM	((__force gfp_t)___GFP_HIGHMEM)
 #define __GFP_DMA32	((__force gfp_t)___GFP_DMA32)
 #define __GFP_MOVABLE	((__force gfp_t)___GFP_MOVABLE)  /* ZONE_MOVABLE allowed */
+#ifdef PMEM_DEV
+#define __GFP_PMEM	((__force gfp_t)___GFP_PMEM)
+#endif
 #define GFP_ZONEMASK	(__GFP_DMA|__GFP_HIGHMEM|__GFP_DMA32|__GFP_MOVABLE)
 
 /**
@@ -223,9 +226,10 @@ struct vm_area_struct;
 
 /* Room for N __GFP_FOO bits */
 #ifdef PMEM_DEV
-#define __GFP_BITS_SHIFT (23 + IS_ENABLED(CONFIG_LOCKDEP))
+/* the GFP_DEV is at the 25th bit */
+#define __GFP_BITS_SHIFT (25)
 #else
-#define __GFP_BITS_SHIFT (24 + IS_ENABLED(CONFIG_LOCKDEP))
+#define __GFP_BITS_SHIFT (23 + IS_ENABLED(CONFIG_LOCKDEP))
 #endif
 #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
 
