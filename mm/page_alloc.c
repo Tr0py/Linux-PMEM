@@ -3646,6 +3646,21 @@ retry:
 			}
 		}
 
+#ifdef PMEM_DEV
+#define PMEM_NODE 2
+		/*
+		 * Make sure when __GFP_PMEM is set, only PMEM_NODE is used.
+		 * Otherwise, PMEM_NODE is never used.
+		 */
+		if (gfp_mask & __GFP_PMEM) {
+			if (zone_to_nid(zone) != PMEM_NODE)
+				continue;
+		} else {
+			if (zone_to_nid(zone) == PMEM_NODE)
+				continue;
+		}
+#endif
+
 		if (no_fallback && nr_online_nodes > 1 &&
 		    zone != ac->preferred_zoneref->zone) {
 			int local_nid;

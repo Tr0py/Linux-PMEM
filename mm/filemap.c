@@ -990,8 +990,7 @@ struct page *__page_cache_alloc(gfp_t gfp)
 
 #ifdef PMEM_DEV
 #define PMEM_NODE 2
-	if (gfp & ___GFP_PMEM) {
-		gfp &= ~___GFP_PMEM;
+	if (gfp & __GFP_PMEM) {
 		return alloc_pages_node(PMEM_NODE, gfp, 0);
 	}
 #endif
