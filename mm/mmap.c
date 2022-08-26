@@ -1485,6 +1485,10 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 			flags &= LEGACY_MAP_MASK;
 			/* fall through */
 		case MAP_SHARED_VALIDATE:
+#ifdef PMEM_DEV
+			/* Allow MAP_VDAX option. */
+			flags_mask |= MAP_VDAX;
+#endif
 			if (flags & ~flags_mask)
 				return -EOPNOTSUPP;
 			if (prot & PROT_WRITE) {
