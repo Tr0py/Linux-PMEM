@@ -368,6 +368,8 @@ static const struct vm_operations_struct ext4_file_vm_ops = {
 	.page_mkwrite   = ext4_page_mkwrite,
 };
 
+int testt = 0;
+
 static int ext4_file_mmap(struct file *file, struct vm_area_struct *vma)
 {
 	struct inode *inode = file->f_mapping->host;
@@ -384,8 +386,13 @@ static int ext4_file_mmap(struct file *file, struct vm_area_struct *vma)
 	if (!daxdev_mapping_supported(vma, dax_dev))
 		return -EOPNOTSUPP;
 
+	if (testt)
+		PDBG("inode %px, vma_inode %px, file inode %px\n", 
+			inode, file_inode(vma->vm_file), file_inode(file));
+
 	file_accessed(file);
 	if (IS_DAX(file_inode(file))) {
+		PDBG("opened DAX file\n");
 		vma->vm_ops = &ext4_dax_vm_ops;
 		vma->vm_flags |= VM_HUGEPAGE;
 	} else {

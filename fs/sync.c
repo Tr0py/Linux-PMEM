@@ -190,6 +190,20 @@ int vfs_fsync_range(struct file *file, loff_t start, loff_t end, int datasync)
 {
 	struct inode *inode = file->f_mapping->host;
 
+#ifdef PMEM_DBG
+	static int log_on = 0;
+	if (log_on)
+	{
+		char *name = __getname();
+		char *path = dentry_path_raw(file->f_path.dentry, name, PATH_MAX);
+		const char exclude[] = "/var/log/journal/";
+
+		if (strncmp(exclude, path, sizeof(exclude) - 1) != 0)
+			PDBG("fsynced file: %s, region: %llx - %llx, datasync %d\n", path, start, end, datasync);
+		__putname(name);
+	}
+#endif
+
 	if (!file->f_op->fsync)
 		return -EINVAL;
 	if (!datasync && (inode->i_state & I_DIRTY_TIME))
