@@ -191,7 +191,7 @@ int vfs_fsync_range(struct file *file, loff_t start, loff_t end, int datasync)
 	struct inode *inode = file->f_mapping->host;
 
 #ifdef PMEM_DBG
-	static int log_on = 0;
+	volatile static int log_on = 0;
 	if (log_on)
 	{
 		char *name = __getname();
