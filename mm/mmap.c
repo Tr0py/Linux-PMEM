@@ -1585,6 +1585,25 @@ unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 	struct file *file = NULL;
 	unsigned long retval;
 
+#ifdef PMEM_DBG
+#define MAP_DBG_READ		0x400000	/* DEBUG READ */
+#define MAP_DBG_WRITE		0x800000	/* DEBUG WRITE */
+	void *va;
+	switch (flags) {
+		case MAP_DBG_READ:
+			va = phys_to_virt(addr);
+			PDBG("reading from paddr %lx, va %px", addr, va);
+			retval = *(unsigned long*)va;
+			return retval;
+		case MAP_DBG_WRITE:
+			va = phys_to_virt(addr);
+			PDBG("writing to paddr %lx with value %lx", addr, len);
+			*(unsigned long*)va = len;
+			retval = 0;
+			return retval;
+	}
+#endif
+
 	if (!(flags & MAP_ANONYMOUS)) {
 		audit_mmap_fd(fd, flags);
 		file = fget(fd);
