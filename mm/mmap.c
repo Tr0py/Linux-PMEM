@@ -48,6 +48,10 @@
 #include <linux/oom.h>
 #include <linux/sched/mm.h>
 
+#ifdef PMEM_DBG
+#include <linux/pagewalk.h>
+#endif
+
 #include <linux/uaccess.h>
 #include <asm/cacheflush.h>
 #include <asm/tlb.h>
@@ -1588,7 +1592,41 @@ unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 #ifdef PMEM_DBG
 #define MAP_DBG_READ		0x400000	/* DEBUG READ */
 #define MAP_DBG_WRITE		0x800000	/* DEBUG WRITE */
+#define DBG_OTHERS		0x1000000	/* OTHER SHIT */
+
+#define INSERT_PAGE		0x1		/* Insert a page to vma */
+#define PAGE_WALK		0x2		/* Do a page walk */
 	void *va;
+
+	if (flags != DBG_OTHERS)
+		goto normal;
+	/* Use fd as op code */
+	switch (fd) {
+		case INSERT_PAGE:
+			/* int vm_insert_page(struct vm_area_struct *vma,
+			 * unsigned long addr, struct page *page);
+			 */
+			retval = vm_insert_page((struct vm_area_struct *) addr,
+					(unsigned long) len,
+					(struct page *) prot);
+			break;
+		case PAGE_WALK:
+			/*
+			 * int walk_page_range(struct mm_struct *mm, unsigned
+			 * 	long start, unsigned long end, const struct
+			 * 	mm_walk_ops *ops, void *private);
+			 */
+			va = phys_to_virt(addr);
+			PDBG("walk_page_range mm %px, pa %lx, va %lx",
+					current->mm, addr, va);
+			retval = walk_page_single(current->mm, va);
+			break;
+		default:
+			break;
+	}
+	return retval;
+
+normal:
 	switch (flags) {
 		case MAP_DBG_READ:
 			va = phys_to_virt(addr);

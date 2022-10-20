@@ -3,6 +3,9 @@
 #include <linux/highmem.h>
 #include <linux/sched.h>
 #include <linux/hugetlb.h>
+#ifdef PMEM_DBG
+#include <linux/printk.h>
+#endif
 
 static int walk_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
 			  struct mm_walk *walk)
@@ -376,3 +379,49 @@ int walk_page_vma(struct vm_area_struct *vma, const struct mm_walk_ops *ops,
 		return err;
 	return __walk_page_range(vma->vm_start, vma->vm_end, &walk);
 }
+
+#ifdef PMEM_DBG
+int walk_page_single(struct mm_struct *mm, unsigned long addr)
+{
+	pgd_t *pgd;
+	p4d_t *p4d;
+	pud_t *pud;
+	pmd_t *pmd;
+	pte_t *pte;
+
+	PDBG("walking page va %px\n", (void*)addr);
+
+	pgd = pgd_offset(mm, addr);
+	if (pgd_none_or_clear_bad(pgd)) {
+		PDBG("bad pgd %#lx\n", *(unsigned long*)pgd);
+		return 1;
+	}
+	PDBG("got pgd at %px val %#lx\n", pgd, *(unsigned long*)pgd);
+
+	p4d = p4d_offset(pgd, addr);
+	if (p4d_none_or_clear_bad(p4d)) {
+		PDBG("bad p4d %#lx\n", *(unsigned long*)p4d);
+		return 1;
+	}
+	PDBG("got p4d at %px val %#lx\n", p4d, *(unsigned long*)p4d);
+
+	pud = pud_offset(p4d, addr);
+	if (pud_none_or_clear_bad(pud)) {
+		PDBG("bad pud %#lx\n", *(unsigned long*)pud);
+		return 1;
+	}
+	PDBG("got pud at %px val %#lx\n", pud, *(unsigned long*)pud);
+
+	pmd = pmd_offset(pud, addr);
+	if (pmd_none_or_clear_bad(pmd)) {
+		PDBG("bad pmd %#lx\n", *(unsigned long*)pmd);
+		return 1;
+	}
+	PDBG("got pmd at %px val %#lx\n", pmd, *(unsigned long*)pmd);
+
+	pte = pte_offset_map(pmd, addr);
+	PDBG("got pte at %px val %#lx\n", pte, *(unsigned long*)pte);
+
+	return 0;
+}
+#endif
